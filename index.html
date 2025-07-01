@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Calculator with Tailwind</title>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div id="calculator" class="rounded-xl shadow-md bg-white p-4 w-full max-w-[200px]">
+        <div id="screen" class="bg-gray-700 text-white h-10 rounded-md mb-3 shadow-sm flex items-center justify-end font-mono text-lg text-right overflow-x-auto whitespace-nowrap w-full max-w-[165px] px-2"></div>
+        <div id="buttons" class="flex flex-row gap-3" >
+            <div id="all-buttons" class="grid grid-cols-4 gap-3">
+                <button class='btn-number'>7</button>
+                <button class="btn-number">8</button>
+                <button class="btn-number">9</button>
+                <button class="btn-operator">/</button>
+                <button class="btn-number">4</button>
+                <button class="btn-number">5</button>
+                <button class="btn-number">6</button>
+                <button class="btn-operator">*</button>
+                <button class="btn-number">1</button>
+                <button class="btn-number">2</button>
+                <button class="btn-number">3</button>
+                <button class="btn-operator">-</button>
+                <button class="btn-number">0</button>
+                <button class="btn-number">.</button>
+                <button class="bg-blue-400 p-1 shadow-sm rounded-md size-8 hover:bg-orange-500 active:bg-green-600 active:scale-75 active:text-white transition duration-150 ease-in-out">=</button>
+                <button class="btn-operator">+</button>
+                <button class="col-span-4 bg-red-500 text-white py-2 rounded-md shadow-md hover:bg-red-600 active:scale-75 active:text-black active:bg-white-700 transition duration-150 ease-in-out">C</button>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const buttonClass = 'bg-gray-200 p-1 shadow-sm rounded-md size-8 hover:bg-yellow-500 active:scale-75 active:bg-black active:text-white transition duration-150 ease-in-out';
+        const buttonClassOperator = 'bg-blue-400 p-1 shadow-sm rounded-md size-8 hover:bg-orange-500 active:scale-75 active:bg-black active:text-white transition duration-150 ease-in-out';
+        document.querySelectorAll('.btn-number').forEach(btn => {
+            btn.className = buttonClass;
+        });
+        document.querySelectorAll('.btn-operator').forEach(btn => {
+            btn.className = buttonClassOperator;
+        });
+
+        const screen = document.getElementById('screen');
+        const buttonInput = document.querySelectorAll('#all-buttons button');
+
+        let errorState = false;
+        let operationDone = false;
+
+        function evaluateExpression(expr) {
+            const tokens = expr.match(/(\d+(\.\d+)?|[+\-*/])/g);
+            if (!tokens) return 'ERROR!';
+
+            let stack = [];
+            let i = 0;
+            while (i < tokens.length) {
+                const token = tokens[i];
+                if (token === '*' || token === '/') {
+                    const prevNumber = stack.pop();
+                    const nextNumber = parseFloat(tokens[i + 1]);
+                    if (isNaN(nextNumber)) return 'ERROR!';
+                    if (token === '/' && nextNumber === 0) return 'ERROR!';
+
+                    let computed;
+                    if (token === '*') {
+                        computed = prevNumber * nextNumber;
+                    } else {
+                        computed = prevNumber / nextNumber;
+                    }
+                    stack.push(computed);
+                    i += 2;
+                } else if (token === '+' || token === '-') {
+                    stack.push(token);
+                    i++;
+                } else {
+                    stack.push(parseFloat(token));
+                    i++;
+                }
+            }
+            let result = stack[0];
+            for (let j = 1; j < stack.length; j += 2) {
+                const operator = stack[j];
+                const nextNumber = stack[j + 1];
+
+                if (isNaN(nextNumber)) return 'ERROR!';
+
+                if (operator === '+') {
+                    result += nextNumber;
+                } else if (operator === '-') {
+                    result -= nextNumber;
+                } else {
+                    return 'ERROR!';
+                }
+            }
+
+            return +result.toFixed(4);
+        }
+
+        buttonInput.forEach(button => {
+            button.addEventListener('click', ()=> {
+                const value = button.textContent;
+                if(errorState){
+                    if(value === 'C'){
+                        screen.textContent = '';
+                        errorState = false;
+                        return;
+                    }
+                    if(value !== '='){
+                        screen.textContent = value;
+                        errorState = false;
+                        return;
+                    }
+                }
+
+                if(operationDone){
+                    screen.textContent = '';
+                    operationDone = false;
+                }
+
+                switch(value){
+                    case "C":
+                        screen.textContent = '';
+                        break;
+                    case '=':
+                        try {
+                            const result = evaluateExpression(screen.textContent);
+                            screen.textContent = result;
+                            operationDone = true;
+                        } catch {
+                            screen.textContent = 'ERROR!';
+                        }
+                        break;
+                    default:
+                        screen.textContent += value;
+                        break;
+                }   
+            });
+        });
+    </script>
+</body>
+</html>
