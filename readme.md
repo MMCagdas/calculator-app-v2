@@ -18,7 +18,7 @@ A simple and clean calculator web application built with HTML, JavaScript, and T
 
 ## 🌐 Live Demo
 
-🔗 [Try the Calculator](https://mmcagdas.github.io/calculator-app/)
+🔗 [Try the Calculator](https://mmcagdas.github.io/calculator-app-v2/)
 
 ## License
 
